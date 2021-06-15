@@ -1,0 +1,23 @@
+{
+    "mama": {
+        "0": {
+            "sender": "mama", 
+            "reciever": "mark", 
+            "text": "hello it is the first message"
+        },
+        "1": {
+            "sender": "mark", 
+            "reciever": "mama", 
+            "text": "it is a reply"
+        }
+    },
+
+    "papa": {
+        "0": {
+            "sender": "mark",
+            "reciever": "papa",
+            "text": "cucou"
+        }
+    }
+    
+}
