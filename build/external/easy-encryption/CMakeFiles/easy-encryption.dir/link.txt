@@ -1,0 +1,2 @@
+/bin/ar qc ../../lib/libeasy-encryption.a  CMakeFiles/easy-encryption.dir/easy-encryption.cpp.o
+/bin/ranlib ../../lib/libeasy-encryption.a
