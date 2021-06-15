@@ -1,6 +1,7 @@
 .vscode
 .clangd
 .cache
+.gitignore
 /build
 /compile_commands.json
 /.vs
