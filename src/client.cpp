@@ -1,3 +1,4 @@
+#include "client_lib.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -12,114 +13,12 @@
 #include <string_view>
 #include <utility>
 #include <fmt/core.h>
-
 #include <cstdlib>
 #include <map>
-
 #include "encrypt.h"
 
 using boost::asio::ip::tcp;
 using json = nlohmann::json;
-
-const std::string ip = "127.0.0.1";
-const int port = 1234;
-
-
-struct User
-{
-    size_t state = 0;  // current position
-    bool logged_in = false;
-    std::string username;
-
-    json messages;
-
-    std::string current_chat;
-    std::string current_key;
-};
-
-
-bool is_valid_username(std::string username)
-{
-    for (char x : username)
-        if ((std::isalnum(x) == 0) && (x != '_')) { return false; }  // bad character 
-    return true;
-}
-
-
-bool login(std::string username)
-{
-    if (!is_valid_username(username)) return false;
-
-    boost::asio::io_service io_service;
-    tcp::socket socket(io_service);
-    socket.connect(tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
-    const string msg = "login " + username + "\n";
-    boost::system::error_code error;
-    boost::asio::write(socket, boost::asio::buffer(msg), error);
-
-    boost::asio::streambuf rb;
-    boost::asio::read_until(socket, rb, "\n");
-    std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-
-    return (response == "200\n");
-}
-
-
-bool signup(std::string username)
-{
-    if (!is_valid_username(username)) return false;
-
-    boost::asio::io_service io_service;
-    tcp::socket socket(io_service);
-    socket.connect(tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
-    const string msg = "signup " + username + "\n";
-    boost::system::error_code error;
-    boost::asio::write(socket, boost::asio::buffer(msg), error);
-
-    boost::asio::streambuf rb;
-    boost::asio::read_until(socket, rb, "\n");
-    std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-
-    return (response == "200\n");
-}
-
-
-json get_messages(User &user)
-{
-    boost::asio::io_service io_service;
-    tcp::socket socket(io_service);
-    socket.connect(tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
-    const string msg = "get " + user.username + "\n";
-    boost::system::error_code error;
-    boost::asio::write(socket, boost::asio::buffer(msg), error);
-
-    boost::asio::streambuf rb;
-    boost::asio::read_until(socket, rb, "\n");
-    std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-
-    return json::parse(response);
-}
-
-
-int send_reply(std::string &sender, std::string &receiver, std::string &text)
-{
-    boost::asio::io_service io_service;
-    tcp::socket socket(io_service);
-    socket.connect(tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
-    const string msg = "send " + 
-        sender + " " +
-        receiver + " " +
-        text + "\n";
-    boost::system::error_code error;
-    boost::asio::write(socket, boost::asio::buffer(msg), error);
-
-    boost::asio::streambuf rb;
-    boost::asio::read_until(socket, rb, "\n");
-    std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-
-    return (response == "200\n");
-}
-
 
 void process_step(User &user)
 {   
@@ -313,6 +212,8 @@ void process_step(User &user)
                 user.current_chat = code;
                 user.state = 5;
             }
+            else
+                fmt::print("Incorrect username {}! \n", code);
         }
     }
 }
