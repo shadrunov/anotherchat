@@ -19,12 +19,11 @@ const int port = 1234;
 **/
 bool is_valid_username(std::string username);
 
-
+/**
+ * stores data of current user
+**/
 struct User
 {
-    /**
-     * stores data of current user
-    **/
     size_t state = 0;  ///< current position of user (current screen)
     bool logged_in = false;  ///< if user is logged in
     std::string username;  ///< username of the user

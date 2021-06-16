@@ -25,13 +25,13 @@
 using boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-void process_step(User &user)
-{   
-    /**
+/**
     This function provides UI: 
     draws screen and displays everything as well as performs navigation
     \param user instance of User class
-    **/
+**/
+void process_step(User &user)
+{   
     system("clear");
     std::string code;
 

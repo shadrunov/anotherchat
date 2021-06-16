@@ -9,11 +9,10 @@
 #include <boost/asio/steady_timer.hpp>
 #include <nlohmann/json.hpp>
 
-
+/**
+ * stores and process messages and users
+ **/
 class DataBase {
-  /**
-   * stores and process messages and users
-  **/
   public:
     /**
     Checks if user exists on server
@@ -88,7 +87,6 @@ auto delegate(std::shared_ptr<Class> ptr, Function fun) {
         return (ptr.get()->*fun)(std::forward<Args>(arg)...);
     };
 }
-
 
 
 class session : public std::enable_shared_from_this<session> {
