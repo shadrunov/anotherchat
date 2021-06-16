@@ -1,3 +1,8 @@
+/**
+ * \file
+ * \brief Chat client -- interacts with user, displays, sends and encrypts messages
+**/
+
 #include "client_lib.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/buffer.hpp>
@@ -22,6 +27,11 @@ using json = nlohmann::json;
 
 void process_step(User &user)
 {   
+    /**
+    This function provides UI: 
+    draws screen and displays everything as well as performs navigation
+    \param user instance of User class
+    **/
     system("clear");
     std::string code;
 
@@ -31,12 +41,13 @@ void process_step(User &user)
 
         if (user.logged_in)
         {
-            fmt::print("Hi {}! \n\nSelect an option below:\n", user.username);
+            fmt::print("{}, welcome back! \n\nSelect an option below:\n", user.username);
             fmt::print(" s  |  Sync\n");
             fmt::print(" c  |  Chat List\n");
+            fmt::print("\nSync messages to get your inbox from the server. \nThen proceed to your Chat List.\n");
         } 
         else {
-            fmt::print("Welcome to Chat client! \n\nSelect an option below:\n");
+            fmt::print("Welcome to Chat client! \n\nEnter s, if you don't have an account or enter l to log in:\n");
             fmt::print(" u  |  Sign Up\n");
             fmt::print(" l  |  Log In\n");
         }
@@ -60,6 +71,7 @@ void process_step(User &user)
     else if (user.state == 1)  // sign up
     {
         fmt::print("Sign Up \n\n");
+        fmt::print("Welcome here! You are about to create an account. \nJust take any free username and you are ready to rock. \nAfter creating an account, go to Chat List section and \nstart new dialog. Sync messages after that.\n\n");
 
         while (!user.logged_in)  // ещё не зарегестрировался
         {
@@ -80,9 +92,10 @@ void process_step(User &user)
     else if (user.state == 2)  // log in
     {
         fmt::print("Log in \n\n");
+        fmt::print("Now you have to enter your username. If you are not registered yet, please,\ngo back and select Sign up. \n\n");
         while (!user.logged_in)  // ещё не вошёл
         {
-            fmt::print("Enter username (or b to go back): ");
+            fmt::print("Enter your username (or b to go back): ");
             std::getline(std::cin >> std::ws, code);
             if (code == std::string{'b'}) { user.state = 0; break;}
 
@@ -98,7 +111,7 @@ void process_step(User &user)
     
     else if (user.state == 3)  // sync
     {
-        fmt::print("Sync messages... \n\n");
+        fmt::print("Syncing messages... \n\n");
 
         user.messages = get_messages(user);
         user.state = 0;
@@ -115,7 +128,7 @@ void process_step(User &user)
             [&](){
                 system("clear");
                 fmt::print("Chat List \n\nSelect from the list below: \n\n");
-                if (user.messages.empty()) fmt::print("Empty. Try to sync messages first. \n\n");
+                if (user.messages.empty()) fmt::print("Nothing's here. \nEnter n to start your first dialog! \nOr go back (b) and sync messages.\n\n");
                 else
                 {
                     // print out messages
@@ -158,9 +171,10 @@ void process_step(User &user)
 
     else if (user.state == 5)  // enter key
     {
-        fmt::print("Decrypt messages\n\nEnter the key from {} or b to go back: ", user.current_chat);
+        fmt::print("Decrypt messages\n\nIf you've just created chat, enter any word combination. \nYou will use it later to decrypt messages. \n\nEnter the key from {} or b to go back: ", user.current_chat);
         std::getline(std::cin >> std::ws, code);
-        if (code == std::string{'b'}) user.state = 0;
+        if (code == std::string{'b'}) 
+            user.state = 0;
         else 
         {
             user.current_key = code;
@@ -190,7 +204,7 @@ void process_step(User &user)
             std::string reply = encrypt(code, user.current_key);
             if (code == std::string{'b'}) break;
             if (send_reply(user.username, user.current_chat, reply)) 
-                fmt::print("Sent sucessfully. \n");
+                fmt::print("Sent. \n");
             else { 
                 fmt::print("Cannot send. \n\nenter b to go back>"); 
                 std::getline(std::cin >> std::ws, code);
@@ -205,7 +219,7 @@ void process_step(User &user)
         fmt::print("Start New Chat\n\n");
         while (user.state == 7)
         { 
-            fmt::print("Enter username: ");
+            fmt::print("Enter your friend's username: ");
             std::getline(std::cin >> std::ws, code);
             if (code == std::string{'b'}) { user.state = 0; break; }
             if (login(code)){  // проверяем что existed

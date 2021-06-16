@@ -1,3 +1,8 @@
+/**
+ * \file
+ * \brief File implements functions from server_lib.hpp
+**/
+
 #include "server_lib.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
@@ -10,16 +15,28 @@
 using json = nlohmann::json;
 using boost::asio::ip::tcp;
 
-DataBase db;
+DataBase db;  ///< stores messages and users
 
 
 bool DataBase::check_user(std::string &username)
-{ // true if user exists
+{
+    /**
+    Checks if user exists on server
+    \param username given username
+    \return true if account exists, false otherwise
+    **/
+
     return (std::find(this->users.begin(), this->users.end(), username) != this->users.end());
 }
 
 bool DataBase::create_user(std::string &username)
-{ // true if created, false if existed already
+{
+    /**
+    Creates user on server
+    \param username new username
+    \return true if created, false if existed already
+    **/
+
     if (std::find(this->users.begin(), this->users.end(), username) != this->users.end())
         return false;
     this->users.emplace_back(username);
@@ -28,6 +45,35 @@ bool DataBase::create_user(std::string &username)
 
 auto DataBase::sync_messages(std::string &username) -> json
 {
+    /**
+    Compiles json with messages addressed to particular user and sends to client
+    \param username username
+    \return json with messages
+    \code json
+    get bob
+    {
+        "alice": {
+            "0": {
+                "receiver": "alice",
+                "sender": "bob",
+                "text": "q2ZJuWt="
+            },
+            "1": {
+                "receiver": "alice",
+                "sender": "bob",
+                "text": "riY="
+            }
+        },
+        "mike": {
+            "0": {
+                "receiver": "bob",
+                "sender": "mike",
+                "text": "rh5Ggq3GhzUXe2QxvU=="
+            }
+        }
+    }
+    \endcode
+    **/
     json result;
 
     for (auto e : messages.items())
@@ -47,6 +93,14 @@ auto DataBase::sync_messages(std::string &username) -> json
 
 bool DataBase::accept_message(std::string &sender, std::string &receiver, std::string &text)
 {
+    /**
+    Accepts message from client, calculates id and saves to database
+    \param sender username of current user
+    \param receiver username of recipient
+    \param text string with encrypted text of the message
+    \return true if successful
+    **/
+
     // generate chat_id
     std::string chat_id = (sender < receiver) ? sender + "+" + receiver : receiver + "+" + sender;
 
@@ -61,11 +115,18 @@ bool DataBase::accept_message(std::string &sender, std::string &receiver, std::s
     return true;
 }
 
+/**
+ * prints out messages
+**/
 void DataBase::print_messages() { std::cout << "\n messages: \n"
                                             << messages.dump(4) << "\n"; }
 
 
 void session::go() {
+    /**
+    Function processes incoming tcp requests
+    **/
+
     auto self(shared_from_this());
     boost::asio::spawn(strand, [this, self](boost::asio::yield_context yield) {
         try {

@@ -1,3 +1,13 @@
+/**
+ * \file
+ * \brief Chat server -- stores users and messages
+ * supports 4 methods:
+ * - login <username>
+ * - signup <username>
+ * - get <username>
+ * - send <sender> <receiver> <text of a message>
+**/
+
 //
 // echo_server.cpp
 // ~~~~~~~~~~~~~~~
