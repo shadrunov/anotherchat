@@ -18,7 +18,6 @@
 
 #include "encrypt.h"
 
-
 using boost::asio::ip::tcp;
 using json = nlohmann::json;
 
@@ -36,16 +35,13 @@ struct User
 
     std::string current_chat;
     std::string current_key;
-
-
 };
+
 
 bool is_valid_username(std::string username)
 {
     for (char x : username)
-    {
         if ((std::isalnum(x) == 0) && (x != '_')) { return false; }  // bad character 
-    }
     return true;
 }
 
@@ -64,8 +60,6 @@ bool login(std::string username)
     boost::asio::streambuf rb;
     boost::asio::read_until(socket, rb, "\n");
     std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-    // const char* response = boost::asio::buffer_cast<const char*>(rb.data());
-    // std::cout << response << " ";
 
     return (response == "200\n");
 }
@@ -85,7 +79,6 @@ bool signup(std::string username)
     boost::asio::streambuf rb;
     boost::asio::read_until(socket, rb, "\n");
     std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-    // std::cout << response << " ";
 
     return (response == "200\n");
 }
@@ -103,28 +96,10 @@ json get_messages(User &user)
     boost::asio::streambuf rb;
     boost::asio::read_until(socket, rb, "\n");
     std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-    // std::cout << response << " ";
 
     return json::parse(response);
-
 }
 
-
-    // socket.connect(tcp::endpoint(boost::asio::ip::address::from_string(ip), port));
-//     boost::asio::streambuf receive_buffer;
-//     std::cout << "line 66" << std::endl;
-//     boost::asio::read(socket, receive_buffer, boost::asio::transfer_all(), error);
-//     std::cout << "line 68" << std::endl;
-//     std::cin >> username;
-//     if ( error && error != boost::asio::error::eof ) {
-//         std::cout << "receive failed: " << error.message() << std::endl;
-//     }
-//     else {
-//         const char* data = boost::asio::buffer_cast<const char*>(receive_buffer.data());
-//         std::cout << data << std::endl;
-//     }
-//     return true;
-// }
 
 int send_reply(std::string &sender, std::string &receiver, std::string &text)
 {
@@ -141,8 +116,6 @@ int send_reply(std::string &sender, std::string &receiver, std::string &text)
     boost::asio::streambuf rb;
     boost::asio::read_until(socket, rb, "\n");
     std::string response{boost::asio::buffer_cast<const char*>(rb.data())};
-    // std::cout << response << " ";
-    // послать на сервер сообщение
 
     return (response == "200\n");
 }
@@ -162,8 +135,8 @@ void process_step(User &user)
             fmt::print("Hi {}! \n\nSelect an option below:\n", user.username);
             fmt::print(" s  |  Sync\n");
             fmt::print(" c  |  Chat List\n");
-            // fmt::print(" n  |  Start New Chat\n");
-        } else {
+        } 
+        else {
             fmt::print("Welcome to Chat client! \n\nSelect an option below:\n");
             fmt::print(" u  |  Sign Up\n");
             fmt::print(" l  |  Log In\n");
@@ -172,31 +145,17 @@ void process_step(User &user)
         std::cin >> code;
 
         if ((code == std::string{'s'}) && (user.logged_in))
-        {
             // start sync
             user.state = 3;
-        }
-        if ((code == std::string{'c'}) && (user.logged_in))
-        {
+        else if ((code == std::string{'c'}) && (user.logged_in))
             // chat list
             user.state = 4;
-        }
-        // if ((code == std::string{'n'}) && (user.logged_in))
-        // {
-        //     // start new chat
-        //     user.state = 7;
-        // }
-
-        if ((code == std::string{'u'}) && (!user.logged_in))
-        {
+        else if ((code == std::string{'u'}) && (!user.logged_in))
             // sign up
             user.state = 1;
-        }
-        if ((code == std::string{'l'}) && (!user.logged_in))
-        {
+        else if ((code == std::string{'l'}) && (!user.logged_in))
             // log in
             user.state = 2;
-        }
     } 
     
     else if (user.state == 1)  // sign up
@@ -251,10 +210,7 @@ void process_step(User &user)
     {
         std::vector<std::string> senders;
         for (auto m : user.messages.items())
-        {
             senders.push_back(m.key());
-            // std::cout << m << " ";
-        }
 
         auto print_messages{
             [&](){
@@ -363,37 +319,8 @@ void process_step(User &user)
 
 int main() 
 {
-
     User user;
-
     for (;;) { process_step(user); }
-    
     return 0;
 }
 
-    
-    // fmt::print("Don't {}\n", "panic");
-    // std::cin >> port;
-    // fmt::print("Don't {}\n", port);
-    //
-    // 
-    // json j = {
-    //         {"mama", {
-    //             {"0", {
-    //                 {"sender", "mama"},
-    //                 {"receiver", "mark"},
-    //                 {"text", "hello there"}
-    //             }}
-    //         }}
-    //     };
-    // 
-    // for (auto e : j.items())
-    // {
-    //     std::cout << e.key() << " ";
-    //     std::cout << e << " ";
-    //     std::cout << e.value() << " ";
-    // }
-// 
-    // std::string msg = "mama goes to work";
-    // std::string key = "qqq";
-    // std::string cr = encrypt(msg, key);

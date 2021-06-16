@@ -28,7 +28,7 @@
 using boost::asio::ip::tcp;
 using json = nlohmann::json;
 
-// =====================
+
 class DataBase {
   public:
     bool check_user(std::string &username){  // true if user exists
@@ -43,8 +43,7 @@ class DataBase {
     }
 
     auto sync_messages(std::string &username) -> json
-    {
-        
+    {        
         json result;
 
         for (auto e : messages.items())
@@ -59,7 +58,6 @@ class DataBase {
                 result[other] = e.value();
             }
         }
-
         return result;
     }
 
@@ -89,12 +87,9 @@ class DataBase {
 };
 
 DataBase db;
-// ================================
 
 
-
-
-
+// example from boost documentation
 template <typename Class, typename Function>
 auto delegate(std::shared_ptr<Class> ptr, Function fun) {
     // return [ptr = std::move(ptr), fun]() {
@@ -104,7 +99,6 @@ auto delegate(std::shared_ptr<Class> ptr, Function fun) {
 }
 
 class session : public std::enable_shared_from_this<session> {
-    // Curiosly recurring template pattern (CRTP)
   public:
     explicit session(boost::asio::io_context &io_context, tcp::socket t_socket)
         : socket(std::move(t_socket)), timer(io_context),
@@ -112,19 +106,17 @@ class session : public std::enable_shared_from_this<session> {
 
     void go() {
         auto self(shared_from_this());
-        boost::asio::spawn(strand, [this,
-                                    self](boost::asio::yield_context yield) {
+        boost::asio::spawn(strand, [this, self](boost::asio::yield_context yield) {
             try {
-                // std::array<char, 128> data;
                 std::locale loc{""};
                 for (;;) { // while (true)
                     std::string data1;
                     timer.expires_from_now(std::chrono::seconds(10));
                     size_t m = boost::asio::async_read_until(socket, boost::asio::dynamic_buffer(data1), "\n", yield);
+                    // end of example
 
                     std::string data = data1;
                     std::cout << data << " ";
-                    // boost::asio::async_write(socket, boost::asio::buffer("200"), yield);
 
                     if (!data.empty()) 
                     {
@@ -171,39 +163,9 @@ class session : public std::enable_shared_from_this<session> {
                             db.print_messages();
 
                             boost::asio::async_write(socket, boost::asio::buffer("200\n"), yield);
-                            
                         }
                     }
-                       
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    // https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/overview/core/line_based.html
-                    // std::string_view text{data};
-                    // if (m > 0 && !text.empty() && std::isdigit(text[0], loc)) {
-                    //     char str[] = "hello, ";
-                    //     int n = 0;
-                    //     auto [ptr, ec] = std::from_chars(
-                    //         text.data(), std::to_address(text.end()), n);
-                    //     if (ec == std::errc{}) {
-                    //         text.remove_prefix(size_t(ptr - text.data()));
-                    //         for (int i = 0; i < n; ++i)
-                    //             boost::asio::async_write(
-                    //                 socket, boost::asio::buffer(str), yield);
-                    //     }
-                    // }
-                    // boost::asio::async_write(socket, boost::asio::buffer(text),
-                    //                          yield);
+                // start of the example
                 }
             } catch (std::exception &e) {
                 socket.close();
@@ -229,26 +191,15 @@ class session : public std::enable_shared_from_this<session> {
     boost::asio::strand<boost::asio::io_context::executor_type> strand;
 };
 
-int main(int argc, char *argv[]) {
+int main() {
     try {
         unsigned short port = 1234;
-        if (argc > 1)
-            port = static_cast<unsigned short>(std::atoi(argv[1]));
-        // if (argc != 2) {
-        //     std::cerr << "Usage: echo_server <port>\n";
-        //     return 1;
-        // }
-
         boost::asio::io_context io_context;
 
         boost::asio::spawn(io_context, [&](boost::asio::yield_context yield) {
             tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), port));
 
             while (true) {
-
-                // for (auto i : db.users) { std::cout << i << " - ";}
-
-
                 boost::system::error_code ec;
                 tcp::socket socket(io_context);
                 acceptor.async_accept(socket, yield[ec]);
@@ -260,11 +211,10 @@ int main(int argc, char *argv[]) {
                 }
             }
         });
-
         io_context.run();
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }
-
     return 0;
 }
+// end of the example
