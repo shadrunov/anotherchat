@@ -78,8 +78,9 @@ class DataBase {
     nlohmann::json messages;  ///< json to store all the messages
 };
 
-
-
+/**
+ * this template helps to spawn a coroutine
+**/
 template <typename Class, typename Function>
 auto delegate(std::shared_ptr<Class> ptr, Function fun) {
     // return [ptr = std::move(ptr), fun]() {
@@ -88,15 +89,27 @@ auto delegate(std::shared_ptr<Class> ptr, Function fun) {
     };
 }
 
-
+/**
+ * this class handles network connection
+**/
 class session : public std::enable_shared_from_this<session> {
   public:
+    /**
+     * constructor of session object
+     * accepts context and socket
+    **/
     explicit session(boost::asio::io_context &io_context, boost::asio::ip::tcp::socket t_socket)
         : socket(std::move(t_socket)), timer(io_context),
           strand(io_context.get_executor()) {}
-
+    
+    /**
+     * handles request and sends response
+    **/
     void go();
 
+    /**
+     * closes socket after some time
+    **/
     void timer_callback(boost::asio::yield_context yield) {
         while (socket.is_open()) {
             boost::system::error_code ignored_ec;
@@ -107,8 +120,8 @@ class session : public std::enable_shared_from_this<session> {
     }
 
   private:
-    boost::asio::ip::tcp::socket socket;
-    boost::asio::steady_timer timer;
-    boost::asio::strand<boost::asio::io_context::executor_type> strand;
+    boost::asio::ip::tcp::socket socket;  ///< socket is an endpoint where client connects to 
+    boost::asio::steady_timer timer;  ///< helps to close connection after a while
+    boost::asio::strand<boost::asio::io_context::executor_type> strand;  ///< allows simuptanious execution
 };
 

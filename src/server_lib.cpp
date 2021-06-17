@@ -118,7 +118,7 @@ void DataBase::print_messages() { std::cout << "\n messages: \n"
                                             << messages.dump(4) << "\n"; }
 
 /**
-Function processes incoming tcp requests
+Function processes incoming tcp requests and sends a response to the client
 **/
 void session::go() {
 

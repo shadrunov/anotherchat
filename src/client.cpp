@@ -234,7 +234,7 @@ void process_step(User &user)
 
 int main() 
 {
-    User user;
+    User user;  ///< instance of current user
     for (;;) { process_step(user); }
     return 0;
 }

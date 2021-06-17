@@ -9,8 +9,8 @@
 using json = nlohmann::json;
 
 
-const std::string ip = "127.0.0.1";
-const int port = 1234;
+const std::string ip = "127.0.0.1";  ///< ip of the server
+const int port = 1234;  ///< open server port for chat
 
 /**
     Checks if given username is correct (consists only from digits, letters and "_")
